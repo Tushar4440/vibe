@@ -1,0 +1,7 @@
+{
+    "prisma.pinToPrisma6": true,
+    "prisma-smart-formatter.typescript.defaultFormatter": "vscode.typescript-language-features",
+    "prisma-smart-formatter.typescriptreact.defaultFormatter": "vscode.typescript-language-features",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
+}
