@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   description: "A vibe coding ai platform",
 };
 
+//! Root layout component providing fonts, Toaster, and TRPC context to all pages.
 export default function RootLayout({
   children,
 }: Readonly<{
