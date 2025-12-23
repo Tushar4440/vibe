@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
+//* Main page component for invoking a background job using TRPC and React Query.
 const Page = () => {
   const [value, setValue] = useState("");
   const trpc = useTRPC();
