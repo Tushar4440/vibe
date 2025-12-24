@@ -1,15 +1,21 @@
-import { openai, createAgent, createTool, createNetwork } from "@inngest/agent-kit";
+import { openai, createAgent, createTool, createNetwork, type Tool } from "@inngest/agent-kit";
 import { Sandbox } from "@e2b/code-interpreter";
 
 import { inngest } from "./client";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
 import { z } from "zod";
 import { PROMPT } from "@/prompt";
+import { prisma } from "@/lib/db";
+
+interface AgentState {
+  summary: string,
+  files: { [path: string]: string };
+}
 
 //! Creates an Inngest function that runs code in a sandbox and returns output and sandbox URL.
-export const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
+export const codeAgentFunction = inngest.createFunction(
+  { id: "code-agent" },
+  { event: "code-agent/run" },
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-nextjs-test-tushar");
@@ -17,7 +23,7 @@ export const helloWorld = inngest.createFunction(
     });
 
     //! Initializes a code agent with tools for terminal, file operations, and file reading in the sandbox.
-    const codeAgent = createAgent({
+    const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
@@ -67,9 +73,8 @@ export const helloWorld = inngest.createFunction(
               }),
             ),
           }),
-          handler: async ({ files }, { step, network }) => {
-
-            const newFiles = step?.run("createOrUpdateFiles", async () => {
+          handler: async ({ files }, { step, network }: Tool.Options<AgentState>) => {
+            const newFiles = await step?.run("createOrUpdateFiles", async () => {
               try {
                 const updatedFiles = await network.state.data.files || {};
                 const sandbox = await getSandbox(sandboxId);
@@ -127,7 +132,7 @@ export const helloWorld = inngest.createFunction(
     });
 
     // !Creates a network for the coding agent and routes tasks based on summary state.
-    const network = createNetwork({
+    const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
       maxIter: 15,
@@ -143,10 +148,14 @@ export const helloWorld = inngest.createFunction(
     //! result
     const result = await network.run(event.data.value);
 
-    //! Runs the code agent to generate code based on event data value.
-    const { output } = await codeAgent.run(
-      `Write the following snippet: ${event.data.value}`,
-    );
+    const isError =
+      !result.state.data.summary ||
+      Object.keys(result.state.data.files || {}).length === 0;
+
+    // Runs the code agent to generate code based on event data value.
+    // const { output } = await codeAgent.run(
+    //   `Write the following snippet: ${event.data.value}`,
+    // );
 
     //! Retrieves the sandbox URL for accessing the running code.
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
@@ -155,12 +164,41 @@ export const helloWorld = inngest.createFunction(
       return `https://${host}`;
     })
 
+    //! Saving the ai assistant generated result (files, data) in prisma...
+    await step.run("save-result", async () => {
+
+      if (isError) {
+        return await prisma.message.create({
+          data: {
+            content: "Something went wrong. Please try again.",
+            role: "ASSISTANT",
+            type: "ERROR",
+          }
+        })
+      }
+
+      return await prisma.message.create({
+        data: {
+          content: result.state.data.summary,
+          role: "ASSISTANT",
+          type: "RESULT",
+          fragment: {
+            create: {
+              sandboxUrl: sandboxUrl,
+              title: "Fragment",
+              files: result.state.data.files,
+            },
+          },
+        },
+      })
+    });
+
     //! Returns the generated code output and sandbox URL and files and summary..
     return {
-      url : sandboxUrl,
+      url: sandboxUrl,
       title: "Fragment",
       files: result.state.data.files,
-      summary : result.state.data.summary,
+      summary: result.state.data.summary,
     };
   },
 );
