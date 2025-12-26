@@ -3,5 +3,6 @@
     "prisma-smart-formatter.typescript.defaultFormatter": "vscode.typescript-language-features",
     "prisma-smart-formatter.typescriptreact.defaultFormatter": "vscode.typescript-language-features",
     "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma"
 }
