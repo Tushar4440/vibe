@@ -19,21 +19,27 @@ export const MessagesContainer = ({
 }: Props) => {
     const trpc = useTRPC();
     const bottomRef = useRef<HTMLDivElement>(null);
+    const lastAssistantMessageIdRef = useRef<string | null>(null);
+
     const { data: messages } = useSuspenseQuery(trpc.messages.getMany.queryOptions({
         projectId: projectId,
-    },{
+    }, {
         // Todo: temporary live message update
         refetchInterval: 5000,
     }));
-    // Todo : this is causing problems...
-    // useEffect(() => {
-    //     const lastAssistantMessageWithFragment = messages.findLast(
-    //         (message) => message.role === "ASSISTANT" && !!message.fragment,
-    //     )
-    //     if (lastAssistantMessageWithFragment) {
-    //         setActiveFragment(lastAssistantMessageWithFragment.fragment);
-    //     }
-    // }, [messages, setActiveFragment]);
+    
+    useEffect(() => {
+        const lastAssistantMessage = messages.findLast(
+            (message) => message.role === "ASSISTANT"
+        );
+        if(
+            lastAssistantMessage?.fragment && 
+            lastAssistantMessage.id !== lastAssistantMessageIdRef.current
+        ){
+            setActiveFragment(lastAssistantMessage.fragment);
+            lastAssistantMessageIdRef.current = lastAssistantMessage.id;
+        }
+    }, [messages, setActiveFragment]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView();
@@ -53,12 +59,12 @@ export const MessagesContainer = ({
                             role={message.role}
                             fragment={message.fragment}
                             createdAt={message.createdAt}
-                            isActiveFragment={activeFragment?.id ===  message.fragment?.id}
+                            isActiveFragment={activeFragment?.id === message.fragment?.id}
                             onFragmentClick={() => setActiveFragment(message.fragment)}
                             type={message.type}
                         />
                     ))}
-                    {isLastMessageUser && <MessageLoading/>}
+                    {isLastMessageUser && <MessageLoading />}
                     <div ref={bottomRef} />
                 </div>
             </div>
