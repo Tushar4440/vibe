@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
+import { useAuth } from "@clerk/nextjs";
 
 interface Props {
     projectId: string;
@@ -24,7 +25,8 @@ interface Props {
 // Right side: either a preview of the generated code running, or the code files themselves.
 // Users can switch between preview and code tabs to see their generated project.
 export const ProjectView = ({ projectId }: Props) => {
-
+    const { has } = useAuth();
+    const hasProAcess = has?.({ plan: "pro" });
     const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
     const [tabState, setTabState] = useState<"preview" | "code">("preview");
 
@@ -43,7 +45,7 @@ export const ProjectView = ({ projectId }: Props) => {
                         />
                     </Suspense>
                 </ResizablePanel>
-                <ResizableHandle className="hover:bg-primary transition-colors"  />
+                <ResizableHandle className="hover:bg-primary transition-colors" />
                 <ResizablePanel defaultSize={65} minSize={50} className="flex flex-col min-h-0">
                     <Tabs
                         className="h-full gap-y-0"
@@ -61,12 +63,14 @@ export const ProjectView = ({ projectId }: Props) => {
                                 </TabsTrigger>
                             </TabsList>
                             <div className="ml-auto flex items-center gap-x-2">
-                                <Button asChild size="sm" variant="tertiary">
-                                    <Link href="/pricing">
-                                        <CrownIcon /> Upgrade
-                                    </Link>
-                                </Button>
-                                <UserControl/>
+                                {!hasProAcess && (
+                                    <Button asChild size="sm" variant="tertiary">
+                                        <Link href="/pricing">
+                                            <CrownIcon /> Upgrade
+                                        </Link>
+                                    </Button>
+                                )}
+                                <UserControl />
                             </div>
                         </div>
                         <TabsContent value="preview">
