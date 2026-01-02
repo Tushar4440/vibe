@@ -13,10 +13,16 @@ interface AgentState {
 }
 
 //! Creates an Inngest function that runs code in a sandbox and returns output and sandbox URL.
+// Main AI code generation function that runs in the background.
+// When a user creates a project or sends a message, this function is triggered.
+// It uses an AI agent to understand the user's request and generate code files.
+// The AI has access to tools to run commands, create files, and read files in a sandbox environment.
 export const codeAgentFunction = inngest.createFunction(
   { id: "code-agent" },
   { event: "code-agent/run" },
   async ({ event, step }) => {
+    // Creates an isolated sandbox environment where code will be generated and run.
+    // A sandbox is like a temporary computer where the AI can safely create and test code.
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-nextjs-test-tushar");
       return sandbox.sandboxId;

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 import { PROJECT_TEMPLATES } from "../../constants";
+import { useClerk } from "@clerk/nextjs";
 
 const formSchema = z.object({
     value: z.string()
@@ -20,10 +21,14 @@ const formSchema = z.object({
         .max(10000, { message: "Value is too long" }),
 })
 
+// Form component that allows users to describe what they want to build.
+// When submitted, it sends the description to an AI agent that generates code.
+// The form validates input and handles successful project creation or errors.
 export const ProjectForm = () => {
     const router = useRouter();
     const trpc = useTRPC();
     const queryClient = useQueryClient();
+    const clerk = useClerk();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -41,17 +46,24 @@ export const ProjectForm = () => {
             // TODO:  INvalidate usage status
         },
         onError: (error) => {
-            // TODO: rediret to price page for speciefic error
             toast.error(error.message);
+            if(error.data?.code === "UNAUTHORIZED"){
+                clerk.openSignIn();
+            }
+            // TODO: rediret to price page for speciefic error
         }
     }))
 
+    // Handles form submission when the user clicks submit or presses Ctrl+Enter.
+    // Takes the user's description and sends it to create a new project.
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         await createProject.mutate({
             value: values.value,
         });
     };
 
+    // Updates the form field when user clicks on a template suggestion.
+    // This populates the textarea with the selected template text.
     const onSelect = (value:string)=>{
         form.setValue("value", value, {
             shouldDirty: true,

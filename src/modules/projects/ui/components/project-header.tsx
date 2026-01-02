@@ -14,6 +14,8 @@ interface Props {
     projectId: string;
 }
 
+// Header component displayed at the top of the project page.
+// Shows the project name and provides a menu to go back to dashboard or change the theme.
 export const ProjectHeader = ({ projectId }: Props) => {
     const trpc = useTRPC();
     const { data: project } = useSuspenseQuery(
