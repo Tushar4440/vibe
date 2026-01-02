@@ -1,38 +1,50 @@
 import { inngest } from "@/inngest/client";
 import { prisma } from "@/lib/db";
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { z } from "zod";
 import { generateSlug } from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 
+// Backend endpoints for managing projects.
+// These procedures handle database operations for projects.
+
 export const projectsRouter = createTRPCRouter({
-    getOne: baseProcedure
+    // Retrieves a single project by its ID.
+    // Only returns the project if it belongs to the logged-in user.
+    getOne: protectedProcedure
         .input(z.object({
-            id: z.string().min(1,{message: "Id is required"})
+            id: z.string().min(1, { message: "Id is required" })
         }))
-        .query(async ({input}) => {
+        .query(async ({ input,ctx }) => {
             const existingProject = await prisma.project.findUnique({
-                where:{
+                where: {
                     id: input.id,
+                    userId: ctx.auth.userId,
                 }
             });
-            if(!existingProject){
+            if (!existingProject) {
                 throw new TRPCError({
-                    code: "NOT_FOUND",message:"Project not found"
+                    code: "NOT_FOUND", message: "Project not found"
                 });
             }
             return existingProject;
         }),
-    getMany: baseProcedure
-        .query(async () => {
+    // Fetches all projects for the logged-in user, sorted by most recently updated.
+    getMany: protectedProcedure
+        .query(async ({ctx}) => {
             const projects = await prisma.project.findMany({
+                where:{
+                    userId:ctx.auth.userId,
+                },
                 orderBy: {
                     updatedAt: "desc",
                 },
             });
             return projects;
         }),
-    create: baseProcedure
+    // Creates a new project with the user's initial request/prompt.
+    // Stores the request as the first message and triggers the AI to generate code.
+    create: protectedProcedure
         .input(
             z.object({
                 value: z.string()
@@ -40,16 +52,17 @@ export const projectsRouter = createTRPCRouter({
                     .max(10000, { message: "Value is too long" }),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
             const createdProject = await prisma.project.create({
                 data: {
+                    userId: ctx.auth.userId,
                     name: generateSlug(2, {
                         format: "kebab",
                     }),
                     messages: {
                         create: {
                             content: input.value,
-                            role: "USER",
+                            role: "USER", 
                             type: "RESULT",
                         }
                     }

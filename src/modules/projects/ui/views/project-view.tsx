@@ -13,11 +13,16 @@ import { CodeIcon, CrownIcon, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileExplorer } from "@/components/file-explorer";
+import { UserControl } from "@/components/user-control";
 
 interface Props {
     projectId: string;
 }
 
+// Main view component that displays a project with a split layout.
+// Left side: chat/messages where user can make requests to the AI.
+// Right side: either a preview of the generated code running, or the code files themselves.
+// Users can switch between preview and code tabs to see their generated project.
 export const ProjectView = ({ projectId }: Props) => {
 
     const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
@@ -61,6 +66,7 @@ export const ProjectView = ({ projectId }: Props) => {
                                         <CrownIcon /> Upgrade
                                     </Link>
                                 </Button>
+                                <UserControl/>
                             </div>
                         </div>
                         <TabsContent value="preview">

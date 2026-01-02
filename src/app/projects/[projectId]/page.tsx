@@ -9,6 +9,9 @@ interface Props {
     }>
 }
 
+// Page that displays a single project with its messages and generated code.
+// This page loads the project details and chat messages before rendering to improve performance.
+// It uses server-side data fetching to pre-load data, so the UI renders faster.
 const Page = async ({ params }: Props) => {
     const { projectId } = await params;
 
