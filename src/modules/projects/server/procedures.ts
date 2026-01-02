@@ -4,6 +4,7 @@ import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { z } from "zod";
 import { generateSlug } from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
+import { consumeCredits } from "@/lib/usage";
 
 // Backend endpoints for managing projects.
 // These procedures handle database operations for projects.
@@ -15,7 +16,7 @@ export const projectsRouter = createTRPCRouter({
         .input(z.object({
             id: z.string().min(1, { message: "Id is required" })
         }))
-        .query(async ({ input,ctx }) => {
+        .query(async ({ input, ctx }) => {
             const existingProject = await prisma.project.findUnique({
                 where: {
                     id: input.id,
@@ -31,10 +32,10 @@ export const projectsRouter = createTRPCRouter({
         }),
     // Fetches all projects for the logged-in user, sorted by most recently updated.
     getMany: protectedProcedure
-        .query(async ({ctx}) => {
+        .query(async ({ ctx }) => {
             const projects = await prisma.project.findMany({
-                where:{
-                    userId:ctx.auth.userId,
+                where: {
+                    userId: ctx.auth.userId,
                 },
                 orderBy: {
                     updatedAt: "desc",
@@ -53,6 +54,20 @@ export const projectsRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input, ctx }) => {
+
+            try {
+                await consumeCredits();
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new TRPCError({ code: "BAD_REQUEST", message: "Something went wrong" });
+                } else {
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS",
+                        message: "You have run out of credits"
+                    });
+                }
+            }
+
             const createdProject = await prisma.project.create({
                 data: {
                     userId: ctx.auth.userId,
@@ -62,7 +77,7 @@ export const projectsRouter = createTRPCRouter({
                     messages: {
                         create: {
                             content: input.value,
-                            role: "USER", 
+                            role: "USER",
                             type: "RESULT",
                         }
                     }
