@@ -22,11 +22,11 @@ interface FileBreadCrumbProps {
 
 const FileBreadCrumb = ({ filepath }: FileBreadCrumbProps) => {
     const pathSegments = filepath.split("/");
-    const maxSegments = 4;
+    const maxSegments = 3;
 
     const renderBreadcrumbItems = () => {
         if (pathSegments.length <= maxSegments) {
-            // Show all segments if 4 or less...
+            // Show all segments if 3 or less...
             return pathSegments.map((segment, index) => {
                 const isLast = index === pathSegments.length - 1;
 
@@ -119,7 +119,7 @@ export const FileExplorer = ({
 
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={30} minSize={30} className="bg-sidebar">
+            <ResizablePanel defaultSize={20} minSize={20} className="bg-sidebar">
                 <TreeView
                     data={treeData}
                     value={selectedFiles}
