@@ -6,6 +6,7 @@ import { getSandbox, lastAssistantTextMessageContent, parseAgentOutput } from ".
 import { z } from "zod";
 import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from "@/prompt";
 import { prisma } from "@/lib/db";
+import { SANDBOX_TIMEOUT } from "./types";
 
 interface AgentState {
   summary: string,
@@ -25,6 +26,7 @@ export const codeAgentFunction = inngest.createFunction(
     // A sandbox is like a temporary computer where the AI can safely create and test code.
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-nextjs-test-tushar");
+      await sandbox.setTimeout(SANDBOX_TIMEOUT);
       return sandbox.sandboxId;
     });
 
@@ -36,9 +38,11 @@ export const codeAgentFunction = inngest.createFunction(
           projectId: event.data.projectId,
         },
         orderBy: {
-          createdAt: "desc",  //todo: change to asc if AI doesn't understand what is the latest message...
+          createdAt: "desc",  
         },
+        take: 5,
       });
+      
       for (const message of messages) {
         formattedMessages.push({
           type: "text",
@@ -46,7 +50,7 @@ export const codeAgentFunction = inngest.createFunction(
           content: message.content,
         })
       }
-      return formattedMessages;
+      return formattedMessages.reverse();
     });
 
     const state = createState<AgentState>(
