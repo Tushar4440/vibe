@@ -741,6 +741,8 @@ npm run dev
 
 **Note on Prisma Client**: If you encounter any issues with the Prisma client (e.g., "Cannot find module '@prisma/client'"), you may need to run `npx prisma generate` manually. This command is usually run automatically during `postinstall`, but it can be helpful to run it explicitly if you are having trouble.
 
+**Validation Script**: The `build` script includes a validation step that checks if the Prisma client has been generated correctly. If the validation fails, the build will stop and display an error message. This is to ensure that the application is always built with a valid Prisma client.
+
 ---
 
 ## 🎯 Key Concepts Explained
