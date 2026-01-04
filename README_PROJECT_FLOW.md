@@ -1,4 +1,5 @@
 # Vibe - AI Code Generation Platform
+live:   https://pris.ly/d/major-version-upgrade                
 
 ## 📚 Project Overview
 
