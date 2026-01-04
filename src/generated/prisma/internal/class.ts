@@ -33,6 +33,10 @@ const config: runtime.GetPrismaClientConfig = {
         "fromEnvVar": null,
         "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "rhel-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -55,8 +59,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Project {\n  id        String   @id @default(uuid())\n  name      String\n  userId    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  messages Message[]\n}\n\nenum MessageRole {\n  USER\n  ASSISTANT\n}\n\nenum MessageType {\n  RESULT\n  ERROR\n}\n\nmodel Message {\n  id        String      @id @default(uuid())\n  content   String\n  role      MessageRole\n  type      MessageType\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n\n  projectId String\n  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)\n\n  fragment Fragment?\n}\n\nmodel Fragment {\n  id         String   @id @default(uuid())\n  messageId  String   @unique\n  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)\n  sandboxUrl String\n  title      String\n  files      Json\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nmodel Usage {\n  key    String    @id\n  points Int\n  expire DateTime?\n}\n",
-  "inlineSchemaHash": "b42968f3febe696ba7f1019a0465d7f26f42214bd87c3246cea9cd2df35c11f8",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider      = \"prisma-client\"\n  output        = \"../src/generated/prisma\"\n  binaryTargets = [\"native\", \"rhel-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Project {\n  id        String   @id @default(uuid())\n  name      String\n  userId    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  messages Message[]\n}\n\nenum MessageRole {\n  USER\n  ASSISTANT\n}\n\nenum MessageType {\n  RESULT\n  ERROR\n}\n\nmodel Message {\n  id        String      @id @default(uuid())\n  content   String\n  role      MessageRole\n  type      MessageType\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n\n  projectId String\n  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)\n\n  fragment Fragment?\n}\n\nmodel Fragment {\n  id         String   @id @default(uuid())\n  messageId  String   @unique\n  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)\n  sandboxUrl String\n  title      String\n  files      Json\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nmodel Usage {\n  key    String    @id\n  points Int\n  expire DateTime?\n}\n",
+  "inlineSchemaHash": "9e7246702bbbd6a53d7b9ae894a786b58cb24e9833f9efe9b32e2c1bc83d8d1f",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
