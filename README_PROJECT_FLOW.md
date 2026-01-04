@@ -447,6 +447,8 @@ START
 └─────────────────────────────────────────────────────────┘
 ```
 
+**Important Note on `src/generated/prisma`**: The `src/generated/prisma` directory contains the auto-generated Prisma Client, which is essential for database access. This directory is created by the `prisma generate` command and is critical for the build process. It is intentionally tracked in version control to ensure it is always available during deployment.
+
 ---
 
 ## 🗂️ Project Folder Structure (Simplified)
@@ -736,6 +738,8 @@ npm run dev
 
 # 6. Visit http://localhost:3000
 ```
+
+**Note on Prisma Client**: If you encounter any issues with the Prisma client (e.g., "Cannot find module '@prisma/client'"), you may need to run `npx prisma generate` manually. This command is usually run automatically during `postinstall`, but it can be helpful to run it explicitly if you are having trouble.
 
 ---
 

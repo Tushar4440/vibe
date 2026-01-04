@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Project Structure
+
+This project follows a feature-driven architecture, where most of the domain-specific logic is organized under the `src/modules` directory. Here’s a brief overview of the key directories:
+
+-   **`src/modules`**: Contains the core business logic, separated by feature (e.g., `projects`, `messages`, `usage`). Each module may include its own server-side procedures, UI components, and other related files.
+-   **`src/components`**: Holds reusable UI components that are shared across different modules.
+-   **`src/generated/prisma`**: Contains the auto-generated Prisma Client. This directory is essential for database access and is created by the `prisma generate` command. **Do not modify or move this directory**, as it is critical for the build process.
+-   **`src/lib`**: Provides shared utility functions and houses the singleton instance of the Prisma client in `src/lib/db.ts`.
+-   **`src/trpc`**: Manages the tRPC setup, including the server, client, and router configurations. It ties together the different procedures defined in the modules.
+
+This structure helps maintain a clean separation of concerns and improves scalability by keeping feature-specific code isolated.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
