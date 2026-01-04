@@ -7,7 +7,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"] // Add "rhel-openssl-3.0.x"
+  binaryTargets = "rhel-openssl-3.0.x" // Add "rhel-openssl-3.0.x"
   engineType = "client" 
 }
 
